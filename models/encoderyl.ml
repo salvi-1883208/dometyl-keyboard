@@ -8,29 +8,32 @@ open! Examples
    also a problem with the around walls (they get deleted when rendering)*)
 let body_lookups =
   let offset = function
-    | 1 -> v3 4. 3.5 (-9.) (* middle *)
-    | 2 -> v3 5.6 (-2.5) (-2.) (* ring *)
-    | 3 -> v3 (-1.) (-26.5) 3. (* pinky *)
+    | 2 -> v3 4. 3.5 (-9.) (* middle *)
+    | 3 -> v3 5.6 (-2.5) (-2.) (* ring *)
+    | i when i >= 4 -> v3 (-3.) (-26.5) 7. (* pinky *)
+    | 0 -> v3 (-2.5) 0. 5.
     | _ -> v3 0. 0. 0.
   and curve = function
-    (* | i when i = 1 ->
-       (* index*)
-       Curvature.(curve ~well:(well ~radius:49. (Float.pi /. 6.)) ()) *)
-    (* | i when i = 0 ->
-       (* inner index *)
-       Curvature.(
-       curve ~well:(well ~tilt:(Float.pi /. 8.7) ~radius:38.5 (Float.pi /. 4.25)) () ) *)
-    | _ -> Curvature.(curve ~well:(well ~radius:37. (Float.pi /. 4.25)) ())
+    | i when i = 2 ->
+      (* index*)
+      Curvature.(curve ~well:(well ~radius:49. (Float.pi /. 6.)) ())
+    | i when i = 0 ->
+      (* inner index *)
+      Curvature.(
+        curve ~well:(well ~tilt:(Float.pi /. 8.7) ~radius:38.5 (Float.pi /. 4.25)) () )
+    | _ -> Curvature.(curve ~well:(well ~radius:38. (Float.pi /. 4.25)) ())
   and splay = function
-    | i when i = 1 -> Float.pi /. -30.
-    | i when i = 2 -> Float.pi /. -17. (* ring *)
-    | i when i >= 3 -> Float.pi /. -11. (* pinky *)
+    | i when i = 2 -> Float.pi /. -30.
+    | i when i = 3 -> Float.pi /. -17. (* ring *)
+    | i when i >= 4 -> Float.pi /. -11. (* pinky *)
     | _ -> 0.
   and rows = function
-    | i when i = 3 -> 2
+    | i when i = 2 -> 4
+    | i when i = 4 -> 2
     | _ -> 3
   and centre = function
-    | i when i >= 3 -> 0.7
+    | i when i = 2 -> 2.
+    | i when i >= 4 -> 0.7
     | _ -> 1.
   in
   Plate.Lookups.body ~offset ~curve ~splay ~rows ~centre ()
@@ -47,11 +50,10 @@ let thumb_lookups =
 
 let plate_builder =
   Plate.make
-    ~n_body_cols:4 (* number of columns *)
-    ~centre_col:1
+    ~n_body_cols:5 (* number of columns *)
     ~body_lookups
     ~thumb_lookups
-    ~thumb_offset:(v3 (-20.) (-53.) (-17.)) (* translation *)
+    ~thumb_offset:(v3 0. (-49.) (-5.)) (* translation *)
     ~thumb_angle:Float.(v3 (pi /. 40.) (pi /. -14.) (pi /. 24.))
       (* ~caps:Caps.Matty3.row *)
     ~caps:Caps.SA.(fun i -> if i = 0 then r4 else if i = 1 then r3 else r2)
@@ -75,7 +77,7 @@ let wall_builder plate =
           ~n_steps:(`PerZ 0.5)
           ~north_lookup:(fun _ -> false)
           ~south_lookup:(fun i -> i <> 1)
-          ~east_lookup:(fun _ -> true)
+          ~east_lookup:(fun _ -> false)
           ~west_lookup:(fun _ -> true)
           ~scale:(v2 0.8 0.9)
           ~scale_ez:(v2 0.42 1., v2 1. 1.)
@@ -92,6 +94,7 @@ let base_connector =
     ~close_thumb:false
     ~north_joins:(fun i -> i < 2)
     ~south_joins:(Fun.const false)
+(* ~east_link:(Connect.full_join ~max_angle:Float.(pi /. 2.) ()) *)
 
 let plate_welder plate =
   Scad.union
@@ -101,7 +104,7 @@ let plate_welder plate =
          ; Bridge.cols ~columns:plate.body 2 3 *)
     ]
 
-let ports_cutter = BastardShield.(cutter ~x_off:(-1.) ~y_off:(-2.) (make ()))
+let ports_cutter = BastardShield.(cutter ~x_off:0. ~y_off:(-2.) (make ()))
 (* let ports_cutter = Ports.reversible_holder ~x_off:0. ~reset_button:true ~y_off:0.5 () *)
 
 let build ?right_hand ?hotswap () =
@@ -127,7 +130,7 @@ let bottom =
       used for the case. *)
   let bump_locs =
     Bottom.
-      [ thumb ~loc:(v2 0.5 0.2) First First
+      [ thumb ~loc:(v2 0.5 0.2) Last First
       ; thumb ~loc:(v2 0.7 0.) Last Last
       ; body ~loc:(v2 0. 1.2) First Last (* top index *)
       ; body ~loc:(v2 0.5 1.3) (Idx 3) Last (* top ring *)
@@ -137,12 +140,11 @@ let bottom =
   in
   Bottom.make ~bump_locs case
 
-let bump_locs = [ 0.; 0.14; 0.33; 0.45; 0.62; 0.83 ]
-let tent = Tent.make ~degrees:34. ~bump_locs case
+let tent = Tent.make ~degrees:40. case
 let to_file = Scad.to_file ~incl:true
 
 let () =
-  to_file "encoderyl_right.scad" (Case.to_scad ~show_caps:true case);
+  to_file "encoderyl_right.scad" (Case.to_scad ~show_caps:false case);
   to_file
     "encoderyl_left.scad"
     (Case.to_scad ~show_caps:false (build ~hotswap:`South () ~right_hand:false));

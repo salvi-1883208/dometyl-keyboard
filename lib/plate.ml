@@ -26,7 +26,7 @@ module Lookups = struct
       Curvature.(curve ~well:(well ~radius:35. (Float.pi /. 4.1)) ()) (* pinky *)
     | i when i = 0 ->
       Curvature.(
-        curve ~well:(well ~tilt:(Float.pi /. 6.75) ~radius:45. (Float.pi /. 6.)) ())
+        curve ~well:(well ~tilt:(Float.pi /. 6.75) ~radius:45. (Float.pi /. 6.)) () )
     | _ -> Curvature.(curve ~well:(well ~radius:46. (Float.pi /. 6.3)) ())
 
   (* post tenting, this can be used to undo tent angle (y-rotation) *)
@@ -41,24 +41,24 @@ module Lookups = struct
   let default_centre _ = 1.
 
   let body
-      ?(offset = default_offset)
-      ?(curve = default_curve)
-      ?(swing = default_swing)
-      ?(splay = default_splay)
-      ?(rows = default_rows)
-      ?(centre = default_centre)
-      ()
+    ?(offset = default_offset)
+    ?(curve = default_curve)
+    ?(swing = default_swing)
+    ?(splay = default_splay)
+    ?(rows = default_rows)
+    ?(centre = default_centre)
+    ()
     =
     { offset; curve; swing; splay; rows; centre }
 
   let thumb
-      ?(offset = fun _ -> V3.zero)
-      ?(curve = fun _ -> Curvature.(curve ~fan:(fan ~radius:85. (Float.pi /. 12.5)) ()))
-      ?(swing = fun _ -> 0.)
-      ?(splay = fun _ -> 0.)
-      ?(rows = fun _ -> 3)
-      ?(centre = fun _ -> 1.)
-      ()
+    ?(offset = fun _ -> V3.zero)
+    ?(curve = fun _ -> Curvature.(curve ~fan:(fan ~radius:85. (Float.pi /. 12.5)) ()))
+    ?(swing = fun _ -> 0.)
+    ?(splay = fun _ -> 0.)
+    ?(rows = fun _ -> 3)
+    ?(centre = fun _ -> 1.)
+    ()
     =
     { offset; curve; swing; splay; rows; centre }
 end
@@ -86,19 +86,19 @@ type t =
 [@@deriving cad]
 
 let make
-    ?(n_body_cols = 5)
-    ?(centre_col = 2)
-    ?(spacing = 1.)
-    ?(tent = Float.pi /. 12.)
-    ?(n_thumb_cols = 1)
-    ?(rotate_thumb_clips = false)
-    ?(thumb_offset = v3 (-14.) (-42.) 13.5)
-    ?(thumb_angle = Float.(v3 (pi /. 20.) (pi /. -9.) (pi /. 12.)))
-    ?(body_lookups = Lookups.body ())
-    ?(thumb_lookups = Lookups.thumb ())
-    ?(caps = Caps.SA.uniform)
-    ?thumb_caps
-    (keyhole : Key.t)
+  ?(n_body_cols = 5)
+  ?(centre_col = 2)
+  ?(spacing = 1.)
+  ?(tent = Float.pi /. 12.)
+  ?(n_thumb_cols = 1)
+  ?(rotate_thumb_clips = false)
+  ?(thumb_offset = v3 (-14.) (-42.) 13.5)
+  ?(thumb_angle = Float.(v3 (pi /. 20.) (pi /. -9.) (pi /. 12.)))
+  ?(body_lookups = Lookups.body ())
+  ?(thumb_lookups = Lookups.thumb ())
+  ?(caps = Caps.SA.uniform)
+  ?thumb_caps
+  (keyhole : Key.t)
   =
   let curve_column ~join_ax ~caps (lookups : Lookups.t) i k =
     Column.make
@@ -126,7 +126,7 @@ let make
             yrot
               ~about:V3.(centre_offset -@ off)
               tent
-              (curve_column ~join_ax:`NS ~caps body_lookups i keyhole))
+              (curve_column ~join_ax:`NS ~caps body_lookups i keyhole) )
         in
         Column.rotate
           ~about:(IMap.find (Int.of_float @@ body_lookups.centre i) tented.keys).origin
@@ -178,7 +178,8 @@ let make
         in
         IMap.fold (fun _ data m -> Float.min m (col_low data)) body_cols Float.max_float
       in
-      IMap.map (Column.translate (v3 0. 0. (keyhole.config.clearance -. lowest_z)))
+      IMap.map
+        (Column.translate (v3 0. 0. (keyhole.config.clearance +. 10.0 -. lowest_z)))
     in
     lift body_cols, lift thumb
   in
@@ -208,14 +209,14 @@ let join_thumb ?in_d ?out_d1 ?out_d2 ?(skip = []) ?(join_skip = []) thumb =
   Scad.union3 (List.init (IMap.cardinal thumb - 1) f)
 
 let column_joins
-    ?in_d
-    ?out_d1
-    ?out_d2
-    ?(body_skip = [])
-    ?(body_join_skip = [])
-    ?thumb_skip
-    ?thumb_join_skip
-    { config = { n_body_cols; _ }; body; thumb; _ }
+  ?in_d
+  ?out_d1
+  ?out_d2
+  ?(body_skip = [])
+  ?(body_join_skip = [])
+  ?thumb_skip
+  ?thumb_join_skip
+  { config = { n_body_cols; _ }; body; thumb; _ }
   =
   let join = Bridge.cols ?in_d ?out_d1 ?out_d2 ~columns:body in
   let f i =
@@ -227,13 +228,13 @@ let column_joins
     ]
 
 let skeleton_bridges
-    ?in_d
-    ?out_d1
-    ?out_d2
-    { config = { n_body_rows; n_body_cols; _ }; body; thumb; _ }
+  ?in_d
+  ?out_d1
+  ?out_d2
+  { config = { n_body_rows; n_body_cols; _ }; body; thumb; _ }
   =
   let bridge c first =
-    let r = if first then fun _ -> 0 else fun i -> n_body_rows i - 1 in
+    let r = if first then fun _ -> 0 else fun i -> n_body_rows i - 2 in
     match Columns.key body c (r c) with
     | Some ({ origin = o1; _ } as k1) ->
       let* next_col = IMap.find_opt (c + 1) body in

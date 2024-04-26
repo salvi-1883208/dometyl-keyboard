@@ -41,3 +41,5 @@ models/stls/
 docs/pngs/
 docs/scads/
 docs/guides/*.mld
+
+.idea/*

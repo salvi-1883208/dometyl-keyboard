@@ -1,12 +1,12 @@
 open OCADml
 open OSCADml
 
-let path n = Printf.sprintf "%s/stls/caps/%s" Util.imports n
+let path n = Printf.sprintf "/%s" n
 let color = Scad.color Color.DarkSlateBlue
 
 module SA = struct
   (* Generated with https://github.com/rsheldiii/KeyV2 *)
-  let path n = path (Printf.sprintf "KeyV2_SA/SA-%s.stl" n)
+  let path n = path (Printf.sprintf "SA-%s.stl" n)
   let r0 = Scad.import3 (path "R0") |> color
   let r2 = Scad.import3 (path "R2") |> color
   let r3 = Scad.import3 (path "R3") |> color
