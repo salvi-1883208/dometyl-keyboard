@@ -101,8 +101,9 @@ let plate_welder plate =
          ; Bridge.cols ~columns:plate.body 2 3 *)
     ]
 
-let ports_cutter = BastardShield.(cutter ~x_off:(-1.) ~y_off:(-2.) (make ()))
-(* let ports_cutter = Ports.reversible_holder ~x_off:0. ~reset_button:true ~y_off:0.5 () *)
+(* let ports_cutter = BastardShield.(cutter ~x_off:(-1.) ~y_off:(-2.) (make ())) *)
+let ports_cutter =
+  Ports.reversible_holder ~reset_button:true ~x_off:1.8 ~y_off:0.2 ~z_rot:0.09 ()
 
 let build ?right_hand ?hotswap () =
   (* let eyelets = Case.eyelets ~config:Eyelet.magnet_6x3_config () in *)
@@ -149,10 +150,10 @@ let () =
   to_file "bottom.scad" bottom;
   to_file "tent_right.scad" tent
 
-let bastard_compare () =
-  Scad.union
-    [ Skeletyl.bastard_compare () |> Scad.color ~alpha:0.5 Color.Blue
+(* let bastard_compare () =
+   Scad.union
+   [ Skeletyl.bastard_compare () |> Scad.color ~alpha:0.5 Color.Blue
     ; Case.to_scad ~show_caps:true case
     ]
 
-let () = to_file "bastard_compare.scad" (bastard_compare ())
+   let () = to_file "bastard_compare.scad" (bastard_compare ()) *)
