@@ -8,9 +8,9 @@ open! Examples
    also a problem with the around walls (they get deleted when rendering)*)
 let body_lookups =
   let offset = function
-    | 1 -> v3 4. 3.5 (-9.) (* middle *)
-    | 2 -> v3 5.6 (-2.5) (-2.) (* ring *)
-    | 3 -> v3 (-1.) (-26.5) 3. (* pinky *)
+    | 1 -> v3 4. 2.5 (-9.) (* middle *)
+    | 2 -> v3 5.6 (-2.5) (-3.) (* ring *)
+    | 3 -> v3 (-0.) (-26.5) 0. (* pinky *)
     | _ -> v3 0. 0. 0.
   and curve = function
     (* | i when i = 1 ->
@@ -20,7 +20,7 @@ let body_lookups =
        (* inner index *)
        Curvature.(
        curve ~well:(well ~tilt:(Float.pi /. 8.7) ~radius:38.5 (Float.pi /. 4.25)) () ) *)
-    | _ -> Curvature.(curve ~well:(well ~radius:37. (Float.pi /. 4.25)) ())
+    | _ -> Curvature.(curve ~well:(well ~radius:39. (Float.pi /. 4.25)) ())
   and splay = function
     | i when i = 1 -> Float.pi /. -30.
     | i when i = 2 -> Float.pi /. -17. (* ring *)
@@ -30,8 +30,8 @@ let body_lookups =
     | i when i = 3 -> 2
     | _ -> 3
   and centre = function
-    | i when i >= 3 -> 0.7
-    | _ -> 1.
+    (* | i when i >= 3 -> 0.7 *)
+    | _ -> 0.70
   in
   Plate.Lookups.body ~offset ~curve ~splay ~rows ~centre ()
 
@@ -51,10 +51,9 @@ let plate_builder =
     ~centre_col:1
     ~body_lookups
     ~thumb_lookups
-    ~thumb_offset:(v3 (-20.) (-53.) (-17.)) (* translation *)
-    ~thumb_angle:Float.(v3 (pi /. 40.) (pi /. -14.) (pi /. 24.))
-      (* ~caps:Caps.Matty3.row *)
-    ~caps:Caps.SA.(fun i -> if i = 0 then r4 else if i = 1 then r3 else r2)
+    ~thumb_offset:(v3 (-20.) (-53.) (-15.)) (* translation *)
+    ~thumb_angle:Float.(v3 0.0 (pi /. -14.) (pi /. 24.)) (* ~caps:Caps.Matty3.row *)
+    ~caps:Caps.SA.(fun i -> if i = 0 then r4 else if i = 1 then r3 else r3)
       (* ~thumb_caps:Caps.MT3.(fun i -> if i = 1 then space_1_25u else space_1u) *)
     ~thumb_caps:Caps.SA.(fun _ -> r3)
 
@@ -73,7 +72,7 @@ let wall_builder plate =
           ~d1:(`Abs 14.)
           ~d2:8.
           ~n_steps:(`PerZ 0.5)
-          ~north_lookup:(fun _ -> false)
+          ~north_lookup:(fun i -> i == 1)
           ~south_lookup:(fun i -> i <> 1)
           ~east_lookup:(fun _ -> true)
           ~west_lookup:(fun _ -> true)
@@ -85,7 +84,7 @@ let wall_builder plate =
 let base_connector =
   Connect.skeleton
     ~height:13.
-    ~index_height:16.
+    ~index_height:20.
     ~thumb_height:14.
     ~corner:(Path3.Round.bez (`Joint 2.))
     ~corner_fn:16
