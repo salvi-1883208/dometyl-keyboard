@@ -178,8 +178,7 @@ let make
         in
         IMap.fold (fun _ data m -> Float.min m (col_low data)) body_cols Float.max_float
       in
-      IMap.map
-        (Column.translate (v3 0. 0. (keyhole.config.clearance +. 10.0 -. lowest_z)))
+      IMap.map (Column.translate (v3 0. 0. (keyhole.config.clearance +. 8.0 -. lowest_z)))
     in
     lift body_cols, lift thumb
   in
