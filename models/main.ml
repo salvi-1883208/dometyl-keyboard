@@ -7,7 +7,7 @@ let body_lookups =
   let offset = function
     | 1 -> v3 4. 2.5 (-8.) (* middle *)
     | 2 -> v3 5.6 (-4.0) (-4.) (* ring *)
-    | 3 -> v3 0.5 (-31.5) (-2.) (* pinky *)
+    | 3 -> v3 (-0.5) (-31.5) (-2.) (* pinky *)
     | _ -> v3 1.5 0. 0.
   and curve = function
     | i when i == 1 ->
@@ -85,6 +85,7 @@ let base_connector =
     ~thumb_height:14.
     ~corner:(Path3.Round.bez (`Joint 2.))
     ~corner_fn:16
+    ~fn:100
     ~close_thumb:false
     ~north_joins:(fun i -> i < 2)
     ~south_joins:(Fun.const false)
